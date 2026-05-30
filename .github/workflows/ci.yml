@@ -22,6 +22,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install fastapi uvicorn pytest pytest-asyncio httpx pytest-cov
 
-      - name: Run tests with coverage
+      - name: Run tests with coverage and report
         run: |
-          python -m pytest --cov=app --cov-report=term --cov-fail-under=85
+          python -m pytest \
+            --cov=app \
+            --cov-report=term \
+            --cov-fail-under=85 \
+            --html=report.html \
+            --self-contained-html
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: report.html
