@@ -2,18 +2,34 @@
 
 ![CI](https://github.com/YOUR_USERNAME/project2-task-api-project/actions/workflows/ci.yml/badge.svg)
 
-A REST API built with FastAPI that manages users, projects, and tasks, combined with a comprehensive pytest-based QA automation suite and CI/CD pipeline. This project demonstrates real-world API testing, authentication, authorization, and automated quality enforcement.
+A REST API built with FastAPI that manages users, projects, and tasks, combined with a comprehensive pytest-based QA automation suite and CI/CD pipeline. The application uses SQLite with SQLAlchemy for persistent data storage and demonstrates real-world API testing, authentication, authorization, validation, workflow rules, and automated quality enforcement.
 
 ---
 
 ## Features
 
-### API Functionality
+### ✅ API Functionality
 - Users, Projects, and Tasks resources
 - Full CRUD operations
-- In-memory data storage (no database required)
+- Persistent data storage using SQLite
+- SQLAlchemy ORM for database access
 - Input validation using Pydantic
 - RESTful API design principles
+
+---
+
+## 🛠 Tech Stack
+
+- **Backend**: FastAPI
+- **Database**: SQLite
+- **ORM**: SQLAlchemy
+- **Testing**: pytest, pytest-asyncio, httpx
+- **Coverage**: pytest-cov
+- **Reporting**: pytest-html
+- **CI/CD**: GitHub Actions
+- **Language**: Python 3.11+
+
+---
 
 ### Authentication & Authorization
 - API key-based authentication
@@ -60,10 +76,24 @@ This project generates HTML test reports using `pytest-html`.
 - Detailed test execution output
 - Error and stack trace visibility
 
+---
+
 ### Run locally:
 
 bash
 pytest --html=report.html --self-contained-html
+
+---
+
+### Database
+The application uses a local SQLite database file for persistence.
+
+By default, the database file is created automatically when the application starts:
+
+```bash
+task_api.db
+```
+---
 
 ### Documentation
 
