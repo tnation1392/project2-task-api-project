@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.models import tasks_db, projects_db
+from sqlalchemy.orm import Session
+from app.db import get_db
+from app.db_models import Task, Project
 from app.schemas import TaskCreate, TaskResponse, TaskUpdate
 from app.auth import get_current_user
 from app.rules import validate_task_transition
@@ -13,52 +15,72 @@ def create_task(
     project_id: str,
     task: TaskCreate,
     current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    project = projects_db.get(project_id)
+    project = db.query(Project).filter(Project.id == project_id).first()
 
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project["owner_id"] != current_user["id"]:
+    if project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    for existing_task in tasks_db.values():
-        if (
-            existing_task["project_id"] == project_id
-            and existing_task["title"].lower() == task.title.lower()
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Task title already exists in this project"
-            )
+    existing_task = db.query(Task).filter(
+        Task.project_id == project_id,
+        Task.title.ilike(task.title)
+    ).first()
+
+    if existing_task:
+        raise HTTPException(
+            status_code=409,
+            detail="Task title already exists in this project"
+        )
 
     task_id = str(uuid.uuid4())
 
-    new_task = {
-        "id": task_id,
-        "title": task.title,
-        "status": "todo",
-        "project_id": project_id,
+    new_task = Task(
+        id=task_id,
+        title=task.title,
+        status="todo",
+        project_id=project_id,
+    )
+
+    db.add(new_task)
+    db.commit()
+    db.refresh(new_task)
+
+    return {
+        "id": new_task.id,
+        "title": new_task.title,
+        "status": new_task.status,
+        "project_id": new_task.project_id,
     }
 
-    tasks_db[task_id] = new_task
-
-    return new_task
 
 @router.get("/projects/{project_id}")
-def get_tasks(project_id: str, current_user: dict = Depends(get_current_user)):
-    project = projects_db.get(project_id)
+def get_tasks(
+    project_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
 
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project["owner_id"] != current_user["id"]:
+    if project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    tasks = db.query(Task).filter(Task.project_id == project_id).all()
+
     return [
-        task
-        for task in tasks_db.values()
-        if task["project_id"] == project_id
+        {
+            "id": task.id,
+            "title": task.title,
+            "status": task.status,
+            "project_id": task.project_id,
+        }
+        for task in tasks
     ]
 
 
@@ -67,42 +89,55 @@ def update_task(
     task_id: str,
     task_update: TaskUpdate,
     current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    task = tasks_db.get(task_id)
+    task = db.query(Task).filter(Task.id == task_id).first()
 
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    project = projects_db.get(task["project_id"])
+    project = db.query(Project).filter(Project.id == task.project_id).first()
 
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project["owner_id"] != current_user["id"]:
+    if project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    validate_task_transition(task["status"], task_update.status)
+    validate_task_transition(task.status, task_update.status)
 
-    task["status"] = task_update.status
+    task.status = task_update.status
+    db.commit()
+    db.refresh(task)
 
-    return task
+    return {
+        "id": task.id,
+        "title": task.title,
+        "status": task.status,
+        "project_id": task.project_id,
+    }
 
 
 @router.delete("/{task_id}")
-def delete_task(task_id: str, current_user: dict = Depends(get_current_user)):
-    task = tasks_db.get(task_id)
+def delete_task(
+    task_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.query(Task).filter(Task.id == task_id).first()
 
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    project = projects_db.get(task["project_id"])
+    project = db.query(Project).filter(Project.id == task.project_id).first()
 
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project["owner_id"] != current_user["id"]:
+    if project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    del tasks_db[task_id]
+    db.delete(task)
+    db.commit()
 
     return {"message": "Task deleted"}
