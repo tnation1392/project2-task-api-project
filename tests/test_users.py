@@ -2,6 +2,7 @@ import pytest
 from tests.helpers import create_user, build_auth_headers
 
 @pytest.mark.asyncio
+@pytest.mark.smoke
 async def test_create_user(client):
     response = await client.post("/users/", json={"name": "Todd"})
 
@@ -21,6 +22,7 @@ async def test_create_user_invalid_name(client):
 
 
 @pytest.mark.asyncio
+@pytest.mark.regression
 @pytest.mark.parametrize("invalid_name", [
     "To",          # too short
     "",            # empty
@@ -39,6 +41,7 @@ async def test_get_users_requires_auth(client):
     assert response.status_code == 401
 
 @pytest.mark.asyncio
+@pytest.mark.smoke
 async def test_get_users_success(client, auth_headers):
     response = await client.get("/users/", headers=auth_headers)
 
@@ -46,6 +49,7 @@ async def test_get_users_success(client, auth_headers):
     assert isinstance(response.json(), list)
 
 @pytest.mark.asyncio
+@pytest.mark.regression
 async def test_user_lifecycle(client):
     user = await create_user(client, name="Lifecycle User")
     headers = build_auth_headers(user)
@@ -63,6 +67,7 @@ async def test_user_lifecycle(client):
     assert get_res.status_code == 401
 
 @pytest.mark.asyncio
+@pytest.mark.regression
 async def test_invalid_api_key(client):
     headers = {"x-api-key": "fake_key"}
 

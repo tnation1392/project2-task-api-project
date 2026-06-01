@@ -2,6 +2,7 @@ import pytest
 from tests.helpers import create_user, build_auth_headers, create_project
 
 @pytest.mark.asyncio
+@pytest.mark.smoke
 async def test_create_project(client, auth_headers):
     response = await client.post(
         "/projects/",
@@ -18,6 +19,7 @@ async def test_create_project(client, auth_headers):
     assert "owner_id" in data
 
 @pytest.mark.asyncio
+@pytest.mark.smoke
 async def test_get_projects_returns_only_user_projects(client, auth_user, auth_headers):
     # Create project for this user
     await client.post("/projects/", json={"name": "Project A"}, headers=auth_headers)
@@ -52,6 +54,7 @@ async def test_users_cannot_see_each_others_projects(client):
     assert res.json() == []  # Should NOT see User A's project
 
 @pytest.mark.asyncio
+@pytest.mark.regression
 async def test_cannot_access_other_users_project(client):
     # Create User A
     res_a = await client.post("/users/", json={"name": "User A"})
@@ -83,6 +86,7 @@ async def test_get_nonexistent_project(client, auth_headers):
     assert res.status_code == 404
 
 @pytest.mark.asyncio
+@pytest.mark.regression
 async def test_delete_project(client):
     user = await create_user(client, name="Project Owner")
     headers = build_auth_headers(user)
@@ -103,6 +107,7 @@ async def test_projects_require_auth(client):
     assert res.status_code == 401
 
 @pytest.mark.asyncio
+@pytest.mark.regression
 async def test_cannot_create_duplicate_project_name_for_same_user(client, auth_headers):
     first_response = await client.post(
         "/projects/",

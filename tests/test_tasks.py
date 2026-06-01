@@ -2,6 +2,7 @@ import pytest
 from tests.helpers import create_user, build_auth_headers, create_project, create_task
 
 @pytest.mark.asyncio
+@pytest.mark.smoke
 async def test_create_task(client, auth_headers):
     project_res = await client.post(
         "/projects/",
@@ -83,9 +84,6 @@ async def test_create_task_invalid_project(client, auth_headers):
 
     assert res.status_code == 404
 
-import pytest
-
-
 @pytest.mark.asyncio
 async def test_update_task_status(client):
     user = await create_user(client, name="Task Owner")
@@ -164,6 +162,7 @@ async def test_delete_task(client, auth_headers):
 import pytest
 
 @pytest.mark.asyncio
+@pytest.mark.smoke
 async def test_update_task_valid_transition_to_in_progress(client):
     user = await create_user(client, name="Task Owner")
     headers = build_auth_headers(user)
@@ -182,6 +181,7 @@ async def test_update_task_valid_transition_to_in_progress(client):
 
 
 @pytest.mark.asyncio
+@pytest.mark.regression
 async def test_update_task_valid_transition_to_done(client, auth_headers):
     project_res = await client.post(
         "/projects/",
@@ -295,6 +295,7 @@ async def test_create_task_whitespace_only_title(client, auth_headers):
     assert response.status_code == 422
 
 @pytest.mark.asyncio
+@pytest.mark.regression
 async def test_cannot_create_duplicate_task_title_in_same_project(client, auth_headers):
     project_res = await client.post(
         "/projects/",
