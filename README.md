@@ -64,3 +64,7 @@ This project generates HTML test reports using `pytest-html`.
 
 bash
 pytest --html=report.html --self-contained-html
+
+### Documentation
+
+[Testing Strategy] (docx/testing-strategy.md)
