@@ -1,5 +1,7 @@
-import pytest
+import pytest, asyncio
 from tests.helpers import create_user, build_auth_headers, create_project, create_task
+from datetime import datetime
+
 
 @pytest.mark.asyncio
 @pytest.mark.smoke
@@ -350,3 +352,56 @@ async def test_same_task_title_allowed_in_different_projects(client, auth_header
     assert res1.status_code == 200
     assert res2.status_code == 200
 
+@pytest.mark.asyncio
+async def test_create_task_includes_timestamps(client):
+    from tests.helpers import create_user, build_auth_headers, create_project
+
+    user = await create_user(client, name="Timestamp User")
+    headers = build_auth_headers(user)
+    project = await create_project(client, headers, name="Timestamp Project")
+
+    response = await client.post(
+        f"/tasks/projects/{project['id']}",
+        json={"title": "Timestamp Task"},
+        headers=headers
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "created_at" in data
+    assert "updated_at" in data
+
+    created_at = datetime.fromisoformat(data["created_at"])
+    updated_at = datetime.fromisoformat(data["updated_at"])
+
+    assert created_at <= updated_at
+
+@pytest.mark.asyncio
+async def test_update_task_changes_updated_at(client):
+    from tests.helpers import create_user, build_auth_headers, create_project, create_task
+
+    user = await create_user(client, name="Audit User")
+    headers = build_auth_headers(user)
+    project = await create_project(client, headers, name="Audit Project")
+    task = await create_task(client, headers, project["id"], title="Audit Task")
+
+    original_created_at = datetime.fromisoformat(task["created_at"])
+    original_updated_at = datetime.fromisoformat(task["updated_at"])
+
+    await asyncio.sleep(0.01)
+
+    update_res = await client.patch(
+        f"/tasks/{task['id']}",
+        json={"status": "in_progress"},
+        headers=headers
+    )
+
+    assert update_res.status_code == 200
+    updated_task = update_res.json()
+
+    new_created_at = datetime.fromisoformat(updated_task["created_at"])
+    new_updated_at = datetime.fromisoformat(updated_task["updated_at"])
+
+    assert new_created_at == original_created_at
+    assert new_updated_at > original_updated_at

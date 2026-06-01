@@ -42,6 +42,8 @@ def create_project(
         "id": new_project.id,
         "name": new_project.name,
         "owner_id": new_project.owner_id,
+        "created_at": new_project.created_at,
+        "updated_at": new_project.updated_at,
     }
 
 
@@ -57,6 +59,8 @@ def get_projects(
             "id": project.id,
             "name": project.name,
             "owner_id": project.owner_id,
+            "created_at": project.created_at,
+            "updated_at": project.updated_at,
         }
         for project in projects
     ]
@@ -80,6 +84,8 @@ def get_project(
         "id": project.id,
         "name": project.name,
         "owner_id": project.owner_id,
+        "created_at": project.created_at,
+        "updated_at": project.updated_at,
     }
 
 

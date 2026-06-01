@@ -54,6 +54,8 @@ def create_task(
         "title": new_task.title,
         "status": new_task.status,
         "project_id": new_task.project_id,
+        "created_at": new_task.created_at,
+        "updated_at": new_task.updated_at,
     }
 
 
@@ -79,6 +81,8 @@ def get_tasks(
             "title": task.title,
             "status": task.status,
             "project_id": task.project_id,
+            "created_at": task.created_at,
+            "updated_at": task.updated_at,
         }
         for task in tasks
     ]
@@ -115,6 +119,8 @@ def update_task(
         "title": task.title,
         "status": task.status,
         "project_id": task.project_id,
+        "created_at": task.created_at,
+        "updated_at": task.updated_at,
     }
 
 

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Literal
+from datetime import datetime
 
 
 class UserCreate(BaseModel):
@@ -30,10 +31,14 @@ class ProjectCreate(BaseModel):
         return value.strip()
 
 
+
 class ProjectResponse(BaseModel):
     id: str
     name: str
     owner_id: str
+    created_at: datetime
+    updated_at: datetime
+
 
 
 class TaskCreate(BaseModel):
@@ -47,11 +52,15 @@ class TaskCreate(BaseModel):
         return value.strip()
 
 
+
 class TaskResponse(BaseModel):
     id: str
     title: str
     status: str
     project_id: str
+    created_at: datetime
+    updated_at: datetime
+
 
 
 class TaskUpdate(BaseModel):

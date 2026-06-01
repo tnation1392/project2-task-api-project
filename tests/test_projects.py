@@ -1,5 +1,6 @@
 import pytest
 from tests.helpers import create_user, build_auth_headers, create_project
+from datetime import datetime
 
 @pytest.mark.asyncio
 @pytest.mark.smoke
@@ -190,3 +191,27 @@ async def test_different_users_can_create_same_project_name(client):
 
     assert res1.status_code == 200
     assert res2.status_code == 200
+
+@pytest.mark.asyncio
+async def test_create_project_includes_timestamps(client):
+    from tests.helpers import create_user, build_auth_headers
+
+    user = await create_user(client, name="Timestamp User")
+    headers = build_auth_headers(user)
+
+    response = await client.post(
+        "/projects/",
+        json={"name": "Timestamp Project"},
+        headers=headers
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "created_at" in data
+    assert "updated_at" in data
+
+    created_at = datetime.fromisoformat(data["created_at"])
+    updated_at = datetime.fromisoformat(data["updated_at"])
+
+    assert created_at <= updated_at
