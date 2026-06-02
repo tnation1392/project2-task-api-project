@@ -2,9 +2,9 @@
 
 ## Overview
 
-This project is a FastAPI-based REST API for managing users, projects, and tasks. It includes authentication, authorization, validation, workflow rules, and automated API testing using pytest.
+This project is a FastAPI-based REST API for managing users, projects, and tasks. It includes authentication, authorization, validation, workflow/state rules, filtering, pagination, SQLite persistence, and automated API testing using pytest.
 
-The goal of the test suite is to verify that endpoints respond correctly and also that the system enforces business rules, protects user boundaries, and handles invalid input safely.
+The goal of the test suite is to verify that endpoints respond correctly and that the system enforces business rules, protects user boundaries, publishes a reliable API contract, and handles invalid input safely.
 
 ---
 
@@ -16,9 +16,12 @@ The test suite is designed to validate the following quality areas:
 - Input validation
 - Authentication behavior
 - Authorization and ownership rules
+- Role-based access control
 - Resource relationships
 - Workflow/state transition logic
 - Data integrity rules
+- Filtering and pagination behavior
+- OpenAPI contract stability
 - Regression protection for future changes
 
 ---
@@ -27,7 +30,7 @@ The test suite is designed to validate the following quality areas:
 
 ### Smoke Tests
 
-Smoke tests cover the most important happy-path flows in the application. 
+Smoke tests cover the most important happy-path flows in the application.
 
 Examples of smoke coverage include:
 
@@ -36,14 +39,15 @@ Examples of smoke coverage include:
 - create project
 - create task
 - valid task status transition
+- basic authenticated access to protected endpoints
 
-Smoke tests are designed to be fast.
+Smoke tests are designed to be fast and provide quick confidence that the core system is functioning.
 
 ---
 
 ### Regression Tests
 
-Regression tests cover broader system behavior, especially edge cases, validation rules, and negative scenarios.
+Regression tests cover broader system behavior, especially edge cases, validation rules, authorization checks, and negative scenarios.
 
 Examples of regression coverage include:
 
@@ -53,7 +57,9 @@ Examples of regression coverage include:
 - duplicate task titles in the same project
 - unauthorized access to another user's resources
 - invalid task workflow transitions
+- filtering and pagination edge cases
 - lifecycle and delete scenarios
+- OpenAPI contract regressions
 
 Regression tests are intended to catch unintended side effects when the application evolves.
 
@@ -90,19 +96,35 @@ This confirms that only authenticated requests can access protected functionalit
 
 ### 3. Authorization
 
-The test suite verifies that users can only access their own resources.
+The test suite verifies that users can only access their own resources unless elevated access rules apply.
 
 Covered scenarios include:
 
 - a user accessing their own projects/tasks
 - a different user attempting to access another user's project
 - a different user attempting to create tasks in another user's project
+- ownership-based access restrictions
+- admin vs member authorization behavior
 
 This protects resource boundaries and simulates real-world access control testing.
 
 ---
 
-### 4. Resource Relationships
+### 4. Role-Based Access Control
+
+The application includes role-aware authorization behavior.
+
+Covered scenarios include:
+
+- standard member access restrictions
+- admin-level access where applicable
+- validation that role-based rules are enforced consistently
+
+This helps ensure the authorization model remains intentional and testable as the API evolves.
+
+---
+
+### 5. Resource Relationships
 
 The application models dependent resources:
 
@@ -119,7 +141,7 @@ This ensures that the API correctly enforces parent-child relationships.
 
 ---
 
-### 5. Workflow Rules
+### 6. Workflow Rules
 
 Task status changes are governed by transition rules.
 
@@ -128,22 +150,54 @@ Current valid transitions are:
 - `todo -> in_progress`
 - `in_progress -> done`
 
-An Invalid transitions return `409 Conflict`.
+Invalid transitions return `409 Conflict`.
 
 The test suite verifies both valid and invalid transitions.
 
 ---
 
-### 6. Data Integrity Rules
+### 7. Data Integrity Rules
 
 The application includes scoped uniqueness rules:
 
 - project names must be unique per user
 - task titles must be unique within a project
 
-The test suite verifies both the failing cases and the allowed cases where the same names are used in different scopes.
+The test suite verifies both failing cases and allowed cases where the same names are used in different scopes.
 
 This helps ensure that validation rules are not too weak or too broad.
+
+---
+
+### 8. Filtering and Pagination
+
+The API supports filtering and pagination for selected resources.
+
+Covered scenarios include:
+
+- filtering by supported fields
+- empty-result filtering cases
+- first-page / second-page pagination behavior
+- partial last page handling
+- out-of-range or empty page behavior
+
+This helps ensure that list endpoints remain predictable and consumer-friendly.
+
+---
+
+### 9. OpenAPI Contract Validation
+
+The project includes OpenAPI contract tests against `/openapi.json`.
+
+Current contract coverage includes:
+
+- OpenAPI schema availability
+- OpenAPI version/schema sanity checks
+- core published API paths
+- expected HTTP methods for core resources
+- security metadata for protected endpoints
+
+These tests help catch accidental contract regressions that could affect API consumers, generated docs, or future integrations.
 
 ---
 
@@ -154,7 +208,7 @@ This helps ensure that validation rules are not too weak or too broad.
 Fixtures are used to provide:
 
 - shared API client setup
-- automatic in-memory database reset before each test
+- reusable database/session setup
 - reusable authenticated user setup
 
 This supports test isolation and repeatability.
@@ -176,7 +230,7 @@ This improves readability and maintainability of the test suite.
 
 ### Parametrization
 
-Parametrized tests are used where multiple inputs should produce the same kind of result, such as invalid user name cases.
+Parametrized tests are used where multiple inputs should produce the same kind of result, such as invalid user name cases or other validation-focused scenarios.
 
 This improves test clarity while reducing duplication.
 
@@ -184,15 +238,15 @@ This improves test clarity while reducing duplication.
 
 ## Test Isolation
 
-The application uses in-memory storage, so test isolation is critical.
+The project now uses SQLite persistence instead of purely in-memory storage, so test isolation is handled through controlled setup/reset behavior in fixtures and helper utilities.
 
-An autouse fixture clears all in-memory data structures before each test:
+The test design aims to ensure:
 
-- `users_db`
-- `projects_db`
-- `tasks_db`
+- deterministic test outcomes
+- minimal state leakage between tests
+- reliable setup for resource creation and authorization scenarios
 
-This ensures that tests do not leak state into one another and remain deterministic.
+This is especially important for integration-style API testing.
 
 ---
 
@@ -203,6 +257,8 @@ The test suite is executed automatically in GitHub Actions on push and pull requ
 The CI pipeline currently performs the following:
 
 - installs dependencies
+- checks formatting with Black
+- checks linting with Flake8
 - runs the pytest suite
 - checks code coverage
 - enforces a minimum coverage threshold
@@ -216,14 +272,13 @@ This ensures that quality checks are applied consistently outside the local envi
 
 The current test strategy does not yet cover:
 
-- database-backed persistence
 - load or performance testing
-- role-based authorization
-- JWT authentication
 - browser/UI automation
-- contract testing against an external specification
+- JWT-based authentication
+- consumer-driven contract testing against an external service/specification
+- Docker-based local execution validation on the current work machine
 
-These are planned as future improvements.
+These remain possible future improvements.
 
 ---
 
@@ -231,16 +286,28 @@ These are planned as future improvements.
 
 Potential next steps for expanding the testing strategy include:
 
-- move from in-memory storage to SQLite or PostgreSQL
-- add role-based authorization scenarios
-- introduce JWT authentication tests
-- add pagination and filtering coverage
+- deeper OpenAPI response/schema validation
+- broader security contract validation
 - separate CI smoke and regression execution paths
-- add linting/static analysis checks in CI
-- expand reporting and documentation
+- multi-version Python CI coverage
+- improved test reporting/documentation
+- Docker validation in an admin-enabled environment
+- performance or reliability-focused testing where useful
 
 ---
 
 ## Summary
 
-This testing strategy is designed to demonstrate practical QA automation skills beyond basic endpoint checks. The suite validates functionality, security boundaries, workflow behavior, and data integrity while remaining maintainable through fixtures, helpers, and structured test organization.
+This testing strategy is designed to demonstrate practical QA automation skills beyond basic endpoint checks.
+
+The suite validates:
+
+- functionality
+- validation behavior
+- authentication and authorization boundaries
+- workflow/state rules
+- data integrity rules
+- filtering and pagination behavior
+- published OpenAPI contract stability
+
+The project is structured to remain maintainable through fixtures, helpers, parametrized tests, CI quality gates, and supporting documentation.
