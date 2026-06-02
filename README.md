@@ -91,6 +91,19 @@ This project generates HTML test reports using `pytest-html`.
 
 ---
 
+## Contract Testing
+
+The project includes OpenAPI contract validation tests that verify the generated schema remains aligned with the core published API surface.
+
+Current coverage includes:
+- OpenAPI schema availability
+- OpenAPI version/schema sanity checks
+- validation of core resource paths in `/openapi.json`
+
+This helps catch accidental route or API contract regressions early.
+
+---
+
 ### Run locally:
 
 bash

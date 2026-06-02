@@ -32,8 +32,10 @@ async def test_openapi_schema_contains_core_resource_paths():
     }
 
     missing_exact_paths = expected_exact_paths - actual_paths
-    assert not missing_exact_paths, f"Missing exact OpenAPI paths: {sorted(missing_exact_paths)}"
+    assert (
+        not missing_exact_paths
+    ), f"Missing exact OpenAPI paths: {sorted(missing_exact_paths)}"
 
-    assert any(path.rstrip("/") == "/users" for path in actual_paths), (
-        f"Users collection path not found. Actual OpenAPI paths: {sorted(actual_paths)}"
-    )
+    assert any(
+        path.rstrip("/") == "/users" for path in actual_paths
+    ), f"Users collection path not found. Actual OpenAPI paths: {sorted(actual_paths)}"
