@@ -24,5 +24,10 @@ def get_current_user(
     return {
         "id": user.id,
         "name": user.name,
-        "api_key": user.api_key
+        "api_key": user.api_key,
+        "role": user.role
     }
+
+
+def is_admin(current_user: dict) -> bool:
+    return current_user["role"] == "admin"

@@ -5,6 +5,7 @@ from datetime import datetime
 
 class UserCreate(BaseModel):
     name: str = Field(..., min_length=3, max_length=50)
+    role: Literal["member", "admin"] = "member"
 
     @field_validator("name")
     @classmethod
@@ -18,6 +19,7 @@ class UserResponse(BaseModel):
     id: str
     name: str
     api_key: str
+    role: str
 
 
 class ProjectCreate(BaseModel):

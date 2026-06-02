@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.db_models import Project
 from app.schemas import ProjectCreate, ProjectResponse
-from app.auth import get_current_user
+from app.auth import get_current_user, is_admin
 import uuid
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -52,7 +52,10 @@ def get_projects(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    projects = db.query(Project).filter(Project.owner_id == current_user["id"]).all()
+    if is_admin(current_user):
+        projects = db.query(Project).all()
+    else:
+        projects = db.query(Project).filter(Project.owner_id == current_user["id"]).all()
 
     return [
         {
@@ -77,7 +80,7 @@ def get_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project.owner_id != current_user["id"]:
+    if not is_admin(current_user) and project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     return {
@@ -100,7 +103,7 @@ def delete_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project.owner_id != current_user["id"]:
+    if not is_admin(current_user) and project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     db.delete(project)

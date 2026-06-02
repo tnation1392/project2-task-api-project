@@ -215,3 +215,43 @@ async def test_create_project_includes_timestamps(client):
     updated_at = datetime.fromisoformat(data["updated_at"])
 
     assert created_at <= updated_at
+
+@pytest.mark.asyncio
+async def test_admin_can_view_other_users_project(client):
+    from tests.helpers import create_user, build_auth_headers, create_project
+
+    member = await create_user(client, name="Member User")
+    member_headers = build_auth_headers(member)
+    project = await create_project(client, member_headers, name="Member Project")
+
+    admin_response = await client.post("/users/", json={"name": "Admin User", "role": "admin"})
+    admin = admin_response.json()
+    admin_headers = {"x-api-key": admin["api_key"]}
+
+    response = await client.get(f"/projects/{project['id']}", headers=admin_headers)
+
+    assert response.status_code == 200
+    assert response.json()["id"] == project["id"]
+
+@pytest.mark.asyncio
+async def test_admin_can_see_all_projects(client):
+    from tests.helpers import create_user, build_auth_headers, create_project
+
+    member1 = await create_user(client, name="Member One")
+    headers1 = build_auth_headers(member1)
+    await create_project(client, headers1, name="Project One")
+
+    member2 = await create_user(client, name="Member Two")
+    headers2 = build_auth_headers(member2)
+    await create_project(client, headers2, name="Project Two")
+
+    admin_response = await client.post("/users/", json={"name": "Admin User", "role": "admin"})
+    admin = admin_response.json()
+    admin_headers = {"x-api-key": admin["api_key"]}
+
+    response = await client.get("/projects/", headers=admin_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert len(data) == 2

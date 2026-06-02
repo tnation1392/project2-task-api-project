@@ -669,3 +669,38 @@ async def test_get_tasks_filtering_and_pagination_together(client):
     assert len(data) == 2
     assert all(task["status"] == "in_progress" for task in data)
 
+@pytest.mark.asyncio
+async def test_admin_can_create_task_in_other_users_project(client):
+    from tests.helpers import create_user, build_auth_headers, create_project
+
+    member = await create_user(client, name="Member User")
+    member_headers = build_auth_headers(member)
+    project = await create_project(client, member_headers, name="Member Project")
+
+    admin_response = await client.post("/users/", json={"name": "Admin User", "role": "admin"})
+    admin = admin_response.json()
+    admin_headers = {"x-api-key": admin["api_key"]}
+
+    response = await client.post(
+        f"/tasks/projects/{project['id']}",
+        json={"title": "Admin Task"},
+        headers=admin_headers
+    )
+
+    assert response.status_code == 200
+    assert response.json()["title"] == "Admin Task"
+
+@pytest.mark.asyncio
+async def test_member_cannot_access_other_users_project_still(client):
+    from tests.helpers import create_user, build_auth_headers, create_project
+
+    owner = await create_user(client, name="Owner User")
+    owner_headers = build_auth_headers(owner)
+    project = await create_project(client, owner_headers, name="Private Project")
+
+    other_member = await create_user(client, name="Other Member")
+    other_headers = build_auth_headers(other_member)
+
+    response = await client.get(f"/projects/{project['id']}", headers=other_headers)
+
+    assert response.status_code == 403

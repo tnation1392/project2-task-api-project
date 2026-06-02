@@ -17,7 +17,8 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(
         id=user_id,
         name=user.name,
-        api_key=api_key
+        api_key=api_key,
+        role=user.role
     )
 
     db.add(new_user)
@@ -27,7 +28,8 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return {
         "id": new_user.id,
         "name": new_user.name,
-        "api_key": new_user.api_key
+        "api_key": new_user.api_key,
+        "role": new_user.role
     }
 
 
@@ -42,11 +44,11 @@ def get_users(
         {
             "id": user.id,
             "name": user.name,
-            "api_key": user.api_key
+            "api_key": user.api_key,
+            "role": user.role
         }
         for user in users
     ]
-
 
 @router.get("/{user_id}")
 def get_user(
@@ -62,9 +64,9 @@ def get_user(
     return {
         "id": user.id,
         "name": user.name,
-        "api_key": user.api_key
+        "api_key": user.api_key,
+        "role": user.role
     }
-
 
 @router.delete("/{user_id}")
 def delete_user(

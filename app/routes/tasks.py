@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.db_models import Task, Project
 from app.schemas import TaskCreate, TaskResponse, TaskUpdate
-from app.auth import get_current_user
+from app.auth import get_current_user, is_admin
 from app.rules import validate_task_transition
 import uuid
 
@@ -22,7 +22,7 @@ def create_task(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project.owner_id != current_user["id"]:
+    if not is_admin(current_user) and project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     existing_task = db.query(Task).filter(
@@ -74,7 +74,7 @@ def get_tasks(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project.owner_id != current_user["id"]:
+    if not is_admin(current_user) and project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     query = db.query(Task).filter(Task.project_id == project_id)
@@ -86,7 +86,6 @@ def get_tasks(
         query = query.filter(Task.title.ilike(f"%{title}%"))
 
     offset = (page - 1) * size
-
     tasks = query.offset(offset).limit(size).all()
 
     return [
@@ -119,7 +118,7 @@ def update_task(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project.owner_id != current_user["id"]:
+    if not is_admin(current_user) and project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     validate_task_transition(task.status, task_update.status)
@@ -154,7 +153,7 @@ def delete_task(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    if project.owner_id != current_user["id"]:
+    if not is_admin(current_user) and project.owner_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     db.delete(task)

@@ -9,6 +9,7 @@ class User(Base):
     id = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False, index=True)
     api_key = Column(String, nullable=False, unique=True, index=True)
+    role = Column(String, nullable=False, default="member", index=True)
 
 
 class Project(Base):

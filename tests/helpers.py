@@ -1,5 +1,5 @@
-async def create_user(client, name="Test User"):
-    response = await client.post("/users/", json={"name": name})
+async def create_user(client, name="Test User", role="member"):
+    response = await client.post("/users/", json={"name": name, "role": role})
     assert response.status_code == 200
     return response.json()
 
