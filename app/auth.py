@@ -45,7 +45,5 @@ def get_current_user(
     }
 
 
-
 def is_admin(current_user: dict) -> bool:
     return current_user["role"] == "admin"
-
