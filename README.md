@@ -1,150 +1,242 @@
- # Project2 Task API Project
+# Project2 Task API Project
 
-![CI](https://github.com/YOUR_USERNAME/project2-task-api-project/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/tnation1392/project2-task-api-project/actions/workflows/ci.yml/badge.svg)](https://github.com/tnation1392/project2-task-api-project/actions/workflows/ci.yml)
 
-A REST API built with FastAPI that manages users, projects, and tasks, combined with a comprehensive pytest-based QA automation suite and CI/CD pipeline. The application uses SQLite with SQLAlchemy for persistent data storage and demonstrates real-world API testing, authentication, authorization, validation, workflow rules, and automated quality enforcement.
-
----
-
-## Features
-
-### ✅ API Functionality
-- Users, Projects, and Tasks resources
-- Full CRUD operations
-- Persistent data storage using SQLite
-- SQLAlchemy ORM for database access
-- Input validation using Pydantic
-- RESTful API design principles
+A portfolio-quality **FastAPI task management API** with a **QA automation-focused test suite**. The project demonstrates practical API quality engineering through authentication, authorization, validation, filtering, pagination, workflow/state rules, OpenAPI contract testing, and CI quality gates.
 
 ---
 
-## 🛠 Tech Stack
+## Project Overview
 
-- **Backend**: FastAPI
-- **Database**: SQLite
-- **ORM**: SQLAlchemy
-- **Testing**: pytest, pytest-asyncio, httpx
-- **Coverage**: pytest-cov
-- **Reporting**: pytest-html
-- **CI/CD**: GitHub Actions
-- **Language**: Python 3.11+
+This project is designed to showcase **mid-level QA automation skills** through a practical API system built with FastAPI and backed by SQLite + SQLAlchemy.
 
----
-
-### Authentication & Authorization
-- API key-based authentication
-- Ownership-based access control
-- Proper HTTP status codes:
-  - 401 Unauthorized (missing/invalid API key)
-  - 403 Forbidden (access denied)
-  - 404 Not Found (resource missing)
-
-### Resource Relationships
-- Users own Projects
-- Projects contain Tasks
-- Nested resource validation and dependency handling
+It combines:
+- a working REST API for **Users, Projects, and Tasks**
+- a robust **pytest-based automation suite**
+- **GitHub Actions CI** for repeatable quality enforcement
+- supporting documentation for both implementation and test strategy
 
 ---
 
-## Testing (QA Automation)
+## API Features
 
-This project includes a full pytest-based API automation suite designed to simulate real-world QA testing scenarios.
+### Core Resources
+- Users
+- Projects
+- Tasks
 
-### Testing Techniques
-- Async API testing using `httpx`
-- Pytest fixtures for reusable environment setup
-- Parametrized tests for validation coverage
-- Test isolation using in-memory resets
-- Multi-step lifecycle testing (create → update → delete)
-- Multi-user testing for access control validation
+### Functionality
+- Full CRUD support across implemented resources
+- SQLite persistence with SQLAlchemy ORM
+- Pydantic-based request validation
+- Timestamp / audit field coverage
+- Filtering support
+- Pagination support
+- Task workflow/state transition rules
 
----
+### Security & Authorization
+- API key authentication
+- Ownership-based authorization
+- Role-based authorization:
+  - `member`
+  - `admin`
 
-### ✅ CI Pipeline Features
-- Installs dependencies
-- Checks formatting with Black
-- Runs full pytest suite
-- Generates code coverage reports
-- Enforces minimum coverage (≥ 85%)
-- Generates HTML test report
-- Uploads report as CI artifact
-
----
-
-### Coverage Includes
-- Positive test cases (happy paths)
-- Negative test cases (invalid inputs, auth failures)
-- Edge cases (empty values, invalid states)
-- Authentication and authorization scenarios
-- Resource dependency validation (user → project → task)
+### Validation & Business Rules
+- Invalid input handling with appropriate HTTP status codes
+- Resource ownership enforcement
+- Nested resource relationship validation
+- Task state transition validation
 
 ---
 
-## Test Reporting
+## QA Automation Coverage
 
-This project generates HTML test reports using `pytest-html`.
+This repository is intentionally built as a **QA automation portfolio project**, not just an API demo.
 
-### Features
-- Visual pass/fail summary
-- Detailed test execution output
-- Error and stack trace visibility
+### Test Coverage Includes
+- Positive API tests
+- Negative API tests
+- Edge case scenarios
+- Authentication and authorization checks
+- Validation rule coverage
+- Resource relationship checks
+- Filtering and pagination validation
+- Task workflow/state transition checks
+- OpenAPI contract validation
 
----
+### Testing Techniques Used
+- Async API testing with `httpx`
+- `pytest` fixtures for reusable setup
+- Parametrized test cases
+- Helper / factory-style test setup utilities
+- Test isolation between runs
+- Smoke and regression markers
 
-## Contract Testing
+### OpenAPI Contract Testing
+The project includes OpenAPI contract validation tests against `/openapi.json` to help catch accidental contract regressions.
 
-The project includes OpenAPI contract validation tests that verify the generated schema remains aligned with the core published API surface.
-
-Current coverage includes:
+Current contract checks include:
 - OpenAPI schema availability
 - OpenAPI version/schema sanity checks
-- validation of core resource paths in `/openapi.json`
-
-This helps catch accidental route or API contract regressions early.
-
----
-
-### Run locally:
-
-bash
-pytest --html=report.html --self-contained-html
+- Core published API paths
+- Expected HTTP methods for core resources
 
 ---
 
-### Database
-The application uses a local SQLite database file for persistence.
+## Tech Stack
 
-By default, the database file is created automatically when the application starts:
+### Application
+- FastAPI
+- SQLite
+- SQLAlchemy
+- Pydantic
+
+### Testing
+- pytest
+- pytest-asyncio
+- httpx
+- pytest-cov
+- pytest-html
+
+### Quality / CI
+- GitHub Actions
+- Black
+- Flake8
+
+### Language
+- Python 3.11+
+
+---
+
+## Project Structure
+
+```text
+project2-task-api-project/
+├── app/
+├── docs/
+│   └── testing-strategy.md
+├── tests/
+├── .github/
+│   └── workflows/
+├── README.md
+├── requirements.txt
+└── ...
+```
+
+> Adjust the structure section if your local layout differs slightly.
+
+---
+
+## Getting Started
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/tnation1392/project2-task-api-project.git
+cd project2-task-api-project
+```
+
+### 2. Create and activate a virtual environment
+**Windows (PowerShell)**
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+**macOS / Linux**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run the API locally
+> Update the module path below if your app entry point differs.
 
 ```bash
+uvicorn app.main:app --reload
+```
+
+### 5. Open the API docs
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- ReDoc: `http://127.0.0.1:8000/redoc`
+- OpenAPI schema: `http://127.0.0.1:8000/openapi.json`
+
+---
+
+## Running Tests
+
+### Run the full test suite
+```bash
+pytest -v
+```
+
+### Run smoke tests only
+```bash
+pytest -m smoke -v
+```
+
+### Run regression tests only
+```bash
+pytest -m regression -v
+```
+
+### Run tests with coverage
+```bash
+pytest --cov=app --cov-report=term-missing
+```
+
+### Generate an HTML report
+```bash
+pytest --html=report.html --self-contained-html
+```
+
+---
+
+## CI Quality Gates
+
+The GitHub Actions pipeline is configured to:
+- install dependencies
+- check formatting with Black
+- lint with Flake8
+- run the pytest suite
+- enforce coverage requirements
+- generate and upload HTML test artifacts
+
+This helps keep the project aligned with real-world QA automation and CI expectations.
+
+---
+
+## Database
+
+The application uses a local SQLite database for persistence.
+
+By default, the database file is created automatically when the application starts.
+
+Example database file:
+```text
 task_api.db
 ```
+
 ---
-
-## 🐳 Running with Docker
-
-### Build the image
-```bash
-docker build -t project2-task-api-project .
-### Documentation```
-```
-
---- 
 
 ## Docker Status
 
 Docker support was investigated as part of the project roadmap.
 
-### Current local limitation
-Local Docker validation is currently blocked on my Windows work environment because:
+### Current Local Limitation
+Local Docker validation is currently blocked in the current Windows work environment because:
 - Docker Desktop on Windows uses WSL 2 for the recommended per-user installation path
-- WSL is not available on this machine
-- I do not have administrative permissions to enable/install the required backend
+- WSL is not available on the current machine
+- Administrative permissions are not available to enable/install the required backend
 
-### Project impact
-This does not affect the API implementation or the automated test suite when run locally with Python and pytest.
+### Project Impact
+This does **not** affect the API implementation or the automated test suite when running locally with Python and pytest.
 
-### Planned follow-up
+### Planned Follow-up
 Docker assets can be completed and validated later on:
 - a personal machine
 - an admin-enabled environment
@@ -152,5 +244,55 @@ Docker assets can be completed and validated later on:
 
 ---
 
-## Testing Strategy
-(docx/testing-strategy.md)
+## Documentation
+
+Additional documentation:
+- `docs/testing-strategy.md`
+
+---
+
+## Roadmap Snapshot
+
+### Completed
+- Task state transition rules
+- Better validation rules
+- Test helpers / factories
+- Smoke / regression markers
+- Testing strategy document
+- SQLite migration / persistence
+- Timestamps / audit fields
+- Filtering
+- Pagination
+- Role-based authorization
+- Black + Flake8 in CI
+- OpenAPI contract testing (paths + methods)
+
+### In Progress / Deferred
+- Docker support (blocked locally by environment restrictions)
+
+---
+
+## Why This Project Matters for QA Automation
+
+This project is meant to demonstrate more than endpoint testing. It shows practical QA automation skills such as:
+- validating business rules
+- testing authorization boundaries
+- protecting API contracts
+- enforcing quality gates in CI
+- documenting test strategy clearly
+
+---
+
+## Future Improvements
+
+Potential next improvements include:
+- deeper OpenAPI contract checks (security metadata, schema details)
+- Docker validation in an admin-enabled environment
+- additional reporting or test organization refinements
+- expanded negative and edge-case coverage where useful
+
+---
+
+## Author
+
+Created as a QA automation portfolio project by **Todd Nason**.
