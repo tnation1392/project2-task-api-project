@@ -252,7 +252,17 @@ Additional documentation:
 
 ---
 
-## Roadmap Snapshot
+### OpenAPI Contract Testing
+The project includes OpenAPI contract validation tests against `/openapi.json` to help catch accidental contract regressions.
+
+Current contract checks include:
+- OpenAPI schema availability
+- OpenAPI version/schema sanity checks
+- Core published API paths
+- Expected HTTP methods for core resources
+- Security metadata for protected endpoints
+
+---
 
 ### Completed
 - Task state transition rules
