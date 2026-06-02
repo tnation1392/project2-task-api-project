@@ -3,6 +3,7 @@ from httpx import ASGITransport, AsyncClient
 
 from app.main import app
 
+
 @pytest.mark.asyncio
 async def test_openapi_schema_contains_expected_methods():
     async with AsyncClient(
