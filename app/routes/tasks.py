@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.db_models import Task, Project
@@ -64,6 +64,8 @@ def get_tasks(
     project_id: str,
     status: str | None = None,
     title: str | None = None,
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -83,7 +85,9 @@ def get_tasks(
     if title:
         query = query.filter(Task.title.ilike(f"%{title}%"))
 
-    tasks = query.all()
+    offset = (page - 1) * size
+
+    tasks = query.offset(offset).limit(size).all()
 
     return [
         {

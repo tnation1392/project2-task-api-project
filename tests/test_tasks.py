@@ -515,3 +515,157 @@ async def test_get_tasks_filter_returns_empty_list_when_no_match(client):
 
     assert response.status_code == 200
     assert response.json() == []
+
+@pytest.mark.asyncio
+async def test_get_tasks_pagination_first_page(client):
+    from tests.helpers import create_user, build_auth_headers, create_project, create_task
+
+    user = await create_user(client, name="Pagination User")
+    headers = build_auth_headers(user)
+    project = await create_project(client, headers, name="Pagination Project")
+
+    for i in range(5):
+        await create_task(client, headers, project["id"], title=f"Task {i + 1}")
+
+    response = await client.get(
+        f"/tasks/projects/{project['id']}?page=1&size=2",
+        headers=headers
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert len(data) == 2
+
+@pytest.mark.asyncio
+async def test_get_tasks_pagination_second_page(client):
+    from tests.helpers import create_user, build_auth_headers, create_project, create_task
+
+    user = await create_user(client, name="Pagination User")
+    headers = build_auth_headers(user)
+    project = await create_project(client, headers, name="Pagination Project")
+
+    for i in range(5):
+        await create_task(client, headers, project["id"], title=f"Task {i + 1}")
+
+    response_page_1 = await client.get(
+        f"/tasks/projects/{project['id']}?page=1&size=2",
+        headers=headers
+    )
+    response_page_2 = await client.get(
+        f"/tasks/projects/{project['id']}?page=2&size=2",
+        headers=headers
+    )
+
+    assert response_page_1.status_code == 200
+    assert response_page_2.status_code == 200
+
+    page_1_ids = [task["id"] for task in response_page_1.json()]
+    page_2_ids = [task["id"] for task in response_page_2.json()]
+
+    assert len(page_1_ids) == 2
+    assert len(page_2_ids) == 2
+    assert set(page_1_ids).isdisjoint(set(page_2_ids))
+
+
+@pytest.mark.asyncio
+async def test_get_tasks_pagination_last_partial_page(client):
+    from tests.helpers import create_user, build_auth_headers, create_project, create_task
+
+    user = await create_user(client, name="Partial Page User")
+    headers = build_auth_headers(user)
+    project = await create_project(client, headers, name="Partial Page Project")
+
+    for i in range(5):
+        await create_task(client, headers, project["id"], title=f"Task {i + 1}")
+
+    response = await client.get(
+        f"/tasks/projects/{project['id']}?page=3&size=2",
+        headers=headers
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert len(data) == 1
+
+@pytest.mark.asyncio
+async def test_get_tasks_pagination_empty_page(client):
+    from tests.helpers import create_user, build_auth_headers, create_project, create_task
+
+    user = await create_user(client, name="Empty Page User")
+    headers = build_auth_headers(user)
+    project = await create_project(client, headers, name="Empty Page Project")
+
+    for i in range(3):
+        await create_task(client, headers, project["id"], title=f"Task {i + 1}")
+
+    response = await client.get(
+        f"/tasks/projects/{project['id']}?page=5&size=2",
+        headers=headers
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+@pytest.mark.asyncio
+async def test_get_tasks_pagination_invalid_page(client):
+    from tests.helpers import create_user, build_auth_headers, create_project
+
+    user = await create_user(client, name="Invalid Page User")
+    headers = build_auth_headers(user)
+    project = await create_project(client, headers, name="Invalid Page Project")
+
+    response = await client.get(
+        f"/tasks/projects/{project['id']}?page=0&size=2",
+        headers=headers
+    )
+
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_get_tasks_pagination_invalid_size(client):
+    from tests.helpers import create_user, build_auth_headers, create_project
+
+    user = await create_user(client, name="Invalid Size User")
+    headers = build_auth_headers(user)
+    project = await create_project(client, headers, name="Invalid Size Project")
+
+    response = await client.get(
+        f"/tasks/projects/{project['id']}?page=1&size=0",
+        headers=headers
+    )
+
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_get_tasks_filtering_and_pagination_together(client):
+    from tests.helpers import create_user, build_auth_headers, create_project, create_task
+
+    user = await create_user(client, name="Filter Page User")
+    headers = build_auth_headers(user)
+    project = await create_project(client, headers, name="Filter Page Project")
+
+    tasks = []
+    for i in range(5):
+        task = await create_task(client, headers, project["id"], title=f"Bug Task {i + 1}")
+        tasks.append(task)
+
+    for task in tasks[:4]:
+        await client.patch(
+            f"/tasks/{task['id']}",
+            json={"status": "in_progress"},
+            headers=headers
+        )
+
+    response = await client.get(
+        f"/tasks/projects/{project['id']}?status=in_progress&page=2&size=2",
+        headers=headers
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert len(data) == 2
+    assert all(task["status"] == "in_progress" for task in data)
+
