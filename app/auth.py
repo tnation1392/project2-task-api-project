@@ -45,11 +45,7 @@ def get_current_user(
     }
 
 
-def is_admin(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required",
-        )
 
-    return current_user
+def is_admin(current_user: dict) -> bool:
+    return current_user["role"] == "admin"
+
