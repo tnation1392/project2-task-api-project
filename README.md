@@ -58,6 +58,20 @@ This project includes a full pytest-based API automation suite designed to simul
 - Multi-step lifecycle testing (create → update → delete)
 - Multi-user testing for access control validation
 
+---
+
+### ✅ CI Pipeline Features
+- Installs dependencies
+- Checks formatting with Black
+- Lints code with Flake8
+- Runs full pytest suite
+- Generates code coverage reports
+- Enforces minimum coverage (≥ 85%)
+- Generates HTML test report
+- Uploads report as CI artifact
+
+---
+
 ### Coverage Includes
 - Positive test cases (happy paths)
 - Negative test cases (invalid inputs, auth failures)
