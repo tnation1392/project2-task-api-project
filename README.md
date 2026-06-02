@@ -63,7 +63,6 @@ This project includes a full pytest-based API automation suite designed to simul
 ### ✅ CI Pipeline Features
 - Installs dependencies
 - Checks formatting with Black
-- Lints code with Flake8
 - Runs full pytest suite
 - Generates code coverage reports
 - Enforces minimum coverage (≥ 85%)
