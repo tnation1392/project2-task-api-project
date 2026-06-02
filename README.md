@@ -248,6 +248,7 @@ Docker assets can be completed and validated later on:
 
 Additional documentation:
 - `docs/testing-strategy.md`
+- `docs/testing-structure.md`'
 
 ---
 
