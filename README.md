@@ -101,7 +101,6 @@ Current contract checks include:
 ### Quality / CI
 - GitHub Actions
 - Black
-- Flake8
 
 ### Language
 - Python 3.11+
@@ -201,7 +200,6 @@ pytest --html=report.html --self-contained-html
 The GitHub Actions pipeline is configured to:
 - install dependencies
 - check formatting with Black
-- lint with Flake8
 - run the pytest suite
 - enforce coverage requirements
 - generate and upload HTML test artifacts
@@ -275,7 +273,7 @@ Current contract checks include:
 - Filtering
 - Pagination
 - Role-based authorization
-- Black + Flake8 in CI
+- Black in CI
 - OpenAPI contract testing (paths + methods)
 
 ### In Progress / Deferred
